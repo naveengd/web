@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pomodoro Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        #timer {
+            font-size: 120px;
+            margin: 120px 0 30px 0;
+        }
+
+        .hint {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="timer">25:00</div>
+        <div class="hint">Space = Start/Pause • R = Restart</div>
+    </div>
+
+    <audio id="alarmSound" src="sound.mp3" preload="auto"></audio>
+
+    <script>
+    let duration = 25 * 60; // change to 25 * 60 for real Pomodoro
+    let timeLeft = duration;
+    let timerInterval = null;
+
+    function updateDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('timer').textContent =
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        if (timerInterval) return;
+
+        if (timeLeft === 0) {
+            timeLeft = duration;
+            updateDisplay();
+        }
+
+        timerInterval = setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                document.getElementById('alarmSound').play();
+            }
+        }, 1000);
+    }
+
+    function pauseTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    function restartTimer() {
+        pauseTimer();
+        timeLeft = duration;
+        updateDisplay();
+        startTimer(); // restart + start
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            if (timerInterval) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        if (e.key.toLowerCase() === 'r') {
+            restartTimer();
+        }
+    });
+
+    updateDisplay(); // no autostart
+    </script>
+</body>
+</html>
