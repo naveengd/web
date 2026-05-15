@@ -2,45 +2,53 @@
 <html>
 <head>
   <title>Vocabulary</title>
+
   <style>
     body {
+      margin: 0;
       font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 90vh;
+      height: 100vh;
+      overflow: hidden;
       color: #333;
-      text-align: center;
-      position: relative;
     }
 
+    /* FULL SCREEN BASE */
     #lineWrapper {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      width: 90%;
-      height: 100%;
+      width: 100%;
+      height: 100vh;
     }
 
+    /* 🔥 FIXED WORD POSITION */
     #word {
+      position: absolute;
+      top: 25%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       font-size: 50px;
       font-weight: 500;
-      margin-bottom: 30px;
+      text-align: center;
+      width: 80%;
     }
 
+    /* 🔥 FIXED EXAMPLES POSITION */
     #examples {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%);
       font-size: 30px;
       color: grey;
       display: flex;
       flex-direction: column;
       gap: 20px;
+      width: 80%;
+      text-align: center;
     }
 
     #bottomBar {
       position: absolute;
-      bottom: 5px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -50,30 +58,25 @@
     }
 
     #lineNumber {
-      display: inline-block;
-      height: 26px;
-      line-height: 26px;
-      text-align: center;
-      font-size: 14px;
       width: 80px;
+      text-align: center;
     }
 
     #letterFilter, #delayInput, #shuffleDropdown {
       height: 26px;
-      padding: 4px;
-      border: none;
-      text-align: center;
-      font-size: 14px;
       width: 80px;
+      font-size: 14px;
+      text-align: center;
+      border: none;
     }
   </style>
 </head>
 
 <body>
-  <div id="lineWrapper">
-    <div id="word">Loading...</div>
-    <div id="examples"></div>
-  </div>
+
+<div id="lineWrapper">
+  <div id="word">Loading...</div>
+  <div id="examples"></div>
 
   <div id="bottomBar">
     <span id="lineNumber"></span>
@@ -99,136 +102,131 @@
       <option value="yes">Yes</option>
     </select>
   </div>
+</div>
 
-  <script>
-    let lines = [];
-    let filtered = [];
+<script>
+let lines = [];
+let filtered = [];
+let index = 0;
+let interval = null;
 
-    let index = 0;
-    let interval = null;
+const wordDisplay = document.getElementById("word");
+const examplesDisplay = document.getElementById("examples");
+const lineNumberDisplay = document.getElementById("lineNumber");
 
-    const wordDisplay = document.getElementById("word");
-    const examplesDisplay = document.getElementById("examples");
-    const lineNumberDisplay = document.getElementById("lineNumber");
+const delayInput = document.getElementById("delayInput");
+const letterFilter = document.getElementById("letterFilter");
+const shuffleDropdown = document.getElementById("shuffleDropdown");
 
-    const delayInput = document.getElementById("delayInput");
-    const letterFilter = document.getElementById("letterFilter");
-    const shuffleDropdown = document.getElementById("shuffleDropdown");
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
+function getDelay() {
+  return parseInt(delayInput.value, 10);
+}
 
-    function getDelay() {
-      return parseInt(delayInput.value, 10);
-    }
+function isShuffleEnabled() {
+  return shuffleDropdown.value === "yes";
+}
 
-    function isShuffleEnabled() {
-      return shuffleDropdown.value === "yes";
-    }
+function showLine() {
+  if (!filtered.length) return;
 
-    function showLine() {
-      if (!filtered.length) return;
+  const parts = filtered[index]
+    .split(".")
+    .map(w => w.trim())
+    .filter(Boolean);
 
-      if (index >= 0 && index < filtered.length) {
-        const parts = filtered[index]
-          .split(".")
-          .map(w => w.trim())
-          .filter(w => w);
+  const [head, ...examples] = parts;
 
-        const [head, ...examples] = parts;
+  wordDisplay.textContent = head || "";
+  examplesDisplay.innerHTML = examples.map(e => `<div>${e}</div>`).join("");
+  lineNumberDisplay.textContent = `${index + 1}/${filtered.length}`;
+  document.title = head || "";
+}
 
-        wordDisplay.textContent = head || "";
-        examplesDisplay.innerHTML = examples.map(e => `<div>${e}</div>`).join("");
-        lineNumberDisplay.textContent = `${index + 1}/${filtered.length}`;
-        document.title = head || "";
-      }
-    }
+function start() {
+  if (interval) clearInterval(interval);
 
-    function start() {
-      if (!filtered.length) return;
+  const delay = getDelay();
+  if (delay === 0) return;
 
-      const delay = getDelay();
-
-      if (interval) clearInterval(interval);
-
-      if (delay === 0) return;
-
-      interval = setInterval(() => {
-        index++;
-        if (index < filtered.length) {
-          showLine();
-        } else {
-          clearInterval(interval);
-          interval = null;
-        }
-      }, delay * 1000);
-    }
-
-    function applyFilter() {
-      if (!lines.length) return;
-
-      const selectedLetter = letterFilter.value;
-
-      let newFiltered =
-        selectedLetter === "-"
-          ? [...lines]
-          : lines.filter(l => l[0]?.toLowerCase() === selectedLetter);
-
-      filtered = isShuffleEnabled() ? shuffle(newFiltered) : newFiltered;
-
-      index = 0;
+  interval = setInterval(() => {
+    index++;
+    if (index < filtered.length) {
       showLine();
-      start();
+    } else {
+      clearInterval(interval);
+      interval = null;
     }
+  }, delay * 1000);
+}
 
-    function prevLine() {
-      if (index > 0) {
-        index--;
-        showLine();
-      }
-    }
+function applyFilter() {
+  if (!lines.length) return;
 
-    function nextLine() {
-      if (index < filtered.length - 1) {
-        index++;
-        showLine();
-      }
-    }
+  const selectedLetter = letterFilter.value;
 
-    document.addEventListener("keydown", e => {
-      if (e.code === "ArrowLeft" || e.code === "PageUp") prevLine();
-      else if (e.code === "ArrowRight" || e.code === "PageDown") nextLine();
-    });
+  let newFiltered =
+    selectedLetter === "-"
+      ? [...lines]
+      : lines.filter(l => l[0]?.toLowerCase() === selectedLetter);
 
-    document.addEventListener("touchend", e => {
-      const touchX = e.changedTouches[0].clientX;
-      const midPoint = window.innerWidth * 0.5;
+  filtered = isShuffleEnabled() ? shuffle(newFiltered) : newFiltered;
 
-      if (touchX < midPoint) prevLine();
-      else nextLine();
-    });
+  index = 0;
+  showLine();
+  start();
+}
 
-    delayInput.addEventListener("change", start);
-    letterFilter.addEventListener("change", applyFilter);
-    shuffleDropdown.addEventListener("change", applyFilter);
+function prevLine() {
+  if (index > 0) {
+    index--;
+    showLine();
+  }
+}
 
-    // ✅ LOAD words.txt
-    fetch("words.txt")
-      .then(res => res.text())
-      .then(text => {
-        lines = text.split(/\r?\n/).filter(x => x.trim());
+function nextLine() {
+  if (index < filtered.length - 1) {
+    index++;
+    showLine();
+  }
+}
 
-        applyFilter(); // start app
-      })
-      .catch(err => {
-        wordDisplay.textContent = "Failed to load words.txt";
-        console.error(err);
-      });
-  </script>
+document.addEventListener("keydown", e => {
+  if (e.code === "ArrowLeft" || e.code === "PageUp") prevLine();
+  else if (e.code === "ArrowRight" || e.code === "PageDown") nextLine();
+});
+
+document.addEventListener("touchend", e => {
+  const touchX = e.changedTouches[0].clientX;
+  const mid = window.innerWidth / 2;
+
+  if (touchX < mid) prevLine();
+  else nextLine();
+});
+
+delayInput.addEventListener("change", start);
+letterFilter.addEventListener("change", applyFilter);
+shuffleDropdown.addEventListener("change", applyFilter);
+
+fetch("words.txt")
+  .then(r => r.text())
+  .then(text => {
+    lines = text.split(/\r?\n/).filter(x => x.trim());
+    applyFilter();
+  })
+  .catch(err => {
+    wordDisplay.textContent = "Failed to load words.txt";
+    console.error(err);
+  });
+
+</script>
+
 </body>
 </html>
