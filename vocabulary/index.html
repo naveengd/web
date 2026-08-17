@@ -19,7 +19,7 @@
       height: 100vh;
     }
 
-    /* 🔥 FIXED WORD POSITION */
+    /* FIXED WORD POSITION */
     #word {
       position: absolute;
       top: 25%;
@@ -31,7 +31,7 @@
       width: 80%;
     }
 
-    /* 🔥 FIXED EXAMPLES POSITION */
+    /* FIXED EXAMPLES POSITION */
     #examples {
       position: absolute;
       top: 40%;
@@ -46,9 +46,10 @@
       text-align: center;
     }
 
-    #bottomBar {
+    /* TOP BAR */
+    #topBar {
       position: absolute;
-      bottom: 20px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -62,7 +63,9 @@
       text-align: center;
     }
 
-    #letterFilter, #delayInput, #shuffleDropdown {
+    #letterFilter,
+    #delayInput,
+    #shuffleDropdown {
       height: 26px;
       width: 80px;
       font-size: 14px;
@@ -75,17 +78,22 @@
 <body>
 
 <div id="lineWrapper">
+
   <div id="word">Loading...</div>
+
   <div id="examples"></div>
 
-  <div id="bottomBar">
+  <!-- TOP BAR -->
+  <div id="topBar">
     <span id="lineNumber"></span>
 
     <select id="letterFilter">
       <option value="-">-</option>
       <script>
         for (let i = 97; i <= 122; i++) {
-          document.write(`<option value="${String.fromCharCode(i)}">${String.fromCharCode(i)}</option>`);
+          document.write(
+            `<option value="${String.fromCharCode(i)}">${String.fromCharCode(i)}</option>`
+          );
         }
       </script>
     </select>
@@ -102,6 +110,7 @@
       <option value="yes">Yes</option>
     </select>
   </div>
+
 </div>
 
 <script>
@@ -145,19 +154,28 @@ function showLine() {
   const [head, ...examples] = parts;
 
   wordDisplay.textContent = head || "";
-  examplesDisplay.innerHTML = examples.map(e => `<div>${e}</div>`).join("");
-  lineNumberDisplay.textContent = `${index + 1}/${filtered.length}`;
+
+  examplesDisplay.innerHTML =
+    examples.map(e => `<div>${e}</div>`).join("");
+
+  lineNumberDisplay.textContent =
+    `${index + 1}/${filtered.length}`;
+
   document.title = head || "";
 }
 
 function start() {
-  if (interval) clearInterval(interval);
+  if (interval) {
+    clearInterval(interval);
+  }
 
   const delay = getDelay();
+
   if (delay === 0) return;
 
   interval = setInterval(() => {
     index++;
+
     if (index < filtered.length) {
       showLine();
     } else {
@@ -175,11 +193,16 @@ function applyFilter() {
   let newFiltered =
     selectedLetter === "-"
       ? [...lines]
-      : lines.filter(l => l[0]?.toLowerCase() === selectedLetter);
+      : lines.filter(
+          l => l[0]?.toLowerCase() === selectedLetter
+        );
 
-  filtered = isShuffleEnabled() ? shuffle(newFiltered) : newFiltered;
+  filtered = isShuffleEnabled()
+    ? shuffle(newFiltered)
+    : newFiltered;
 
   index = 0;
+
   showLine();
   start();
 }
@@ -199,30 +222,54 @@ function nextLine() {
 }
 
 document.addEventListener("keydown", e => {
-  if (e.code === "ArrowLeft" || e.code === "PageUp") prevLine();
-  else if (e.code === "ArrowRight" || e.code === "PageDown") nextLine();
+  if (e.code === "ArrowLeft" || e.code === "PageUp") {
+    prevLine();
+  }
+  else if (
+    e.code === "ArrowRight" ||
+    e.code === "PageDown"
+  ) {
+    nextLine();
+  }
 });
 
 document.addEventListener("touchend", e => {
   const touchX = e.changedTouches[0].clientX;
   const mid = window.innerWidth / 2;
 
-  if (touchX < mid) prevLine();
-  else nextLine();
+  if (touchX < mid) {
+    prevLine();
+  }
+  else {
+    nextLine();
+  }
 });
 
 delayInput.addEventListener("change", start);
-letterFilter.addEventListener("change", applyFilter);
-shuffleDropdown.addEventListener("change", applyFilter);
+
+letterFilter.addEventListener(
+  "change",
+  applyFilter
+);
+
+shuffleDropdown.addEventListener(
+  "change",
+  applyFilter
+);
 
 fetch("words.txt")
   .then(r => r.text())
   .then(text => {
-    lines = text.split(/\r?\n/).filter(x => x.trim());
+    lines = text
+      .split(/\r?\n/)
+      .filter(x => x.trim());
+
     applyFilter();
   })
   .catch(err => {
-    wordDisplay.textContent = "Failed to load words.txt";
+    wordDisplay.textContent =
+      "Failed to load words.txt";
+
     console.error(err);
   });
 
