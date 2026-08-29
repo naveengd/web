@@ -16,39 +16,32 @@
       -ms-user-select: none;
     }
 
-    /* FULL SCREEN BASE */
-    #lineWrapper {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-    }
-
-    /* FIXED WORD POSITION */
     #word {
-      position: absolute;
-      top: 25%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 50px;
-      font-weight: 500;
-      text-align: center;
-      width: 80%;
-    }
+  font-size: 50px;
+  font-weight: 500;
+  text-align: center;
+  width: 80%;
+}
 
-    /* FIXED EXAMPLES POSITION */
-    #examples {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 30px;
-      color: grey;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 80%;
-      text-align: center;
-    }
+#examples {
+  margin-top: 40px;
+  font-size: 30px;
+  color: grey;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 80%;
+  text-align: center;
+}
+
+#lineWrapper {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
     /* TOP BAR */
     #topBar {
