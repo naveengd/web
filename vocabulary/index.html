@@ -8,7 +8,8 @@
       margin: 0;
       font-family: sans-serif;
       min-height: 100vh;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       color: #333;
       user-select: none;
       -webkit-user-select: none;
@@ -62,6 +63,7 @@
 
     #examples {
       margin-top: 40px;
+      margin-bottom: 40px;
       font-size: 30px;
       color: grey;
       display: flex;
@@ -99,6 +101,7 @@
 
       #examples {
         margin-top: 25px;
+        margin-bottom: 30px;
         font-size: 22px;
         gap: 15px;
         width: 90%;
@@ -139,8 +142,10 @@
     </select>
   </div>
 
+  <!-- WORD -->
   <div id="word">Loading...</div>
 
+  <!-- EXAMPLES -->
   <div id="examples"></div>
 
 </div>
