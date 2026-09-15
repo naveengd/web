@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model</title>
+  <style>
+    body {
+      margin: 0 25px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      line-height: 1.8;
+      color: gray;
+    }
+    #sentence {
+      margin-top: 150px;
+      font-size: 42px;
+      min-height: 150px;
+      white-space: pre-wrap;
+    }
+    #counter {
+      margin-top: 50px;
+      font-size: 16px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div id="sentence">Loading...</div>
+  <div id="counter"></div>
+
+  <script>
+    let sentences = [];
+    let index = 0;
+
+    function showSentence() {
+      if (sentences.length === 0) return;
+      document.getElementById("sentence").textContent = sentences[index];
+      document.getElementById("counter").textContent = `${index + 1} / ${sentences.length}`;
+    }
+
+    function nextSentence() {
+      if (index < sentences.length - 1) {
+        index++;
+        showSentence();
+      }
+    }
+
+    function prevSentence() {
+      if (index > 0) {
+        index--;
+        showSentence();
+      }
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") {
+        nextSentence();
+      }
+      if (e.key === "ArrowLeft") {
+        prevSentence();
+      }
+    });
+
+    async function loadModel() {
+      try {
+        const response = await fetch("model.txt");
+        if (!response.ok) {
+          throw new Error("Unable to load model.txt");
+        }
+        const data = await response.text();
+        sentences = data
+          .split(/\r?\n/)
+          .map(line => line.trim())
+          .filter(line => line.length > 0);
+
+        if (sentences.length === 0) {
+          document.getElementById("sentence").textContent = "No data found in model.txt";
+          return;
+        }
+        showSentence();
+      } catch (error) {
+        document.getElementById("sentence").textContent = "Error: Cannot load model.txt";
+        console.error(error);
+      }
+    }
+
+    loadModel();
+  </script>
+</body>
+</html>
